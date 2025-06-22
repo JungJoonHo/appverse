@@ -12,10 +12,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { auth, db, storage } from "../firebase";
+import { auth, db } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { useRouter } from "expo-router";
+import storage from "@repo/storage";
 
 export default function ProductUpload() {
   const [title, setTitle] = useState("");
@@ -50,22 +51,14 @@ export default function ProductUpload() {
     }
     setLoading(true);
     try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const storageRef = ref(
-        storage,
-        `products/${Date.now()}_${auth.currentUser.uid}`,
-      );
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-
+      const downloadUrl = await storage.uploadFile(imageUri, `products/${Date.now()}_${auth.currentUser.uid}`);
       await addDoc(collection(db, "products"), {
         sellerId: auth.currentUser.uid,
         sellerEmail: auth.currentUser.email,
         title,
         description,
         startPrice: Number(startPrice),
-        imageUrl: downloadURL,
+        imageUrl: downloadUrl,
         createdAt: Timestamp.now(),
         status: "active", // active, sold, expired
         endAt: Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24시간 뒤 마감
