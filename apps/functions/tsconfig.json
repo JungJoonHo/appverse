@@ -1,0 +1,13 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "rootDir": "src",
+    "module": "commonjs",
+    "target": "es2021"
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+} 

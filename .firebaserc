@@ -1,0 +1,20 @@
+{
+  "projects": {
+    "default": "everyone-bid"
+  },
+  "targets": {
+    "everyone-bid": {
+      "hosting": {
+        "public": "apps/everyone-bid/dist",
+        "ignore": [
+          "firebase.json",
+          "**/.*",
+          "**/node_modules/**"
+        ]
+      },
+      "functions": {
+        "source": "apps/functions"
+      }
+    }
+  }
+} 

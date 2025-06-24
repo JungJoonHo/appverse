@@ -45,9 +45,7 @@ export default function ProductDetail() {
   const isMyProduct = product?.sellerId === user?.uid;
   const highestBid = bids[0]?.amount ?? 0;
   const currentPrice = highestBid > 0 ? highestBid : product?.startPrice ?? 0;
-  const isEnded = product
-    ? new Date() > new Timestamp(product.endAt.seconds, product.endAt.nanoseconds).toDate()
-    : false;
+  const isEnded = product?.status !== 'active';
 
   useEffect(() => {
     if (!id) return;
@@ -79,7 +77,11 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (!product || isEnded) {
-      setTimeLeft("경매 마감");
+      if(product?.status === 'completed') {
+        setTimeLeft("판매 완료");
+      } else {
+        setTimeLeft("경매 마감");
+      }
       return;
     }
 
@@ -134,6 +136,45 @@ export default function ProductDetail() {
     return `${id.substring(0, 3)}***@${domain}`;
   };
 
+  // 경매 상태에 따른 메시지를 표시하는 함수
+  const renderAuctionStatus = () => {
+    if (!product) return null;
+
+    switch (product.status) {
+      case 'completed':
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>🎉 판매 완료 🎉</Text>
+            <Text>낙찰자: {maskEmail(product.winnerEmail || '')}</Text>
+            <Text>최종 가격: {product.finalPrice?.toLocaleString()}원</Text>
+          </View>
+        );
+      case 'failed':
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>경매 유찰</Text>
+            <Text>입찰자의 결제 실패로 경매가 유찰되었습니다.</Text>
+          </View>
+        );
+      case 'ended':
+         return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>경매 종료</Text>
+            <Text>입찰자가 없어 경매가 마감되었습니다.</Text>
+          </View>
+        );
+      case 'error':
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>오류 발생</Text>
+            <Text>경매 처리 중 오류가 발생했습니다.</Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  }
+
   if (loading) {
     return <ActivityIndicator style={styles.centered} size="large" />;
   }
@@ -169,6 +210,8 @@ export default function ProductDetail() {
           <Text style={styles.timerLabel}>남은 시간</Text>
           <Text style={styles.timerText}>{timeLeft}</Text>
         </View>
+
+        {renderAuctionStatus()}
 
         {!isMyProduct && !isEnded && (
           <View style={styles.bidContainer}>
@@ -321,5 +364,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#888',
     marginTop: 10,
+  },
+  statusContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
 });

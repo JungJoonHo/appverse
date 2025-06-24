@@ -1,4 +1,4 @@
-import { LocalStorageProvider } from "./localStorageProvider";
+import { LocalFileStorageProvider } from "./localFileStorageProvider";
 import { FirebaseStorageProvider } from "./firebaseStorageProvider";
 
 export interface StorageProvider {
@@ -10,7 +10,7 @@ export interface StorageProvider {
 let provider: StorageProvider;
 
 if (process.env.NODE_ENV === "development") {
-  provider = new LocalStorageProvider();
+  provider = new LocalFileStorageProvider();
 } else {
   provider = new FirebaseStorageProvider();
 }

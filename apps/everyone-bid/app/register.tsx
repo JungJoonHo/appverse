@@ -1,26 +1,58 @@
 import { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import { useRouter } from "expo-router";
+import { setDoc, doc } from "firebase/firestore";
 
 export default function Register() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
   const handleRegister = async () => {
+    if (!name || !phone || !email || !password) {
+      Alert.alert("입력 오류", "모든 필드를 입력해주세요.");
+      return;
+    }
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      // Firestore에 사용자 정보 저장
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        name: name,
+        phone: phone,
+        email: email,
+      });
       // navigation is now handled by AuthContext
     } catch (e: any) {
-      alert(e.message);
+      Alert.alert("회원가입 실패", e.message);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>회원가입</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="이름"
+        value={name}
+        onChangeText={setName}
+        autoCapitalize="words"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="전화번호"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
       <TextInput
         style={styles.input}
         placeholder="이메일"

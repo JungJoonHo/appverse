@@ -70,6 +70,8 @@ function RootLayoutNav() {
         <Stack.Screen name="product-upload" options={{ title: "상품 등록" }} />
         <Stack.Screen name="products" />
         <Stack.Screen name="product/[id]" />
+        <Stack.Screen name="payment-method" options={{ title: "결제 관리" }}/>
+        <Stack.Screen name="payment-webview" options={{ title: "결제 진행" }}/>
 
         {/* The (tabs) layout is causing issues with the new auth flow. */}
         {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}

@@ -33,7 +33,8 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
-    "@repo/storage": "workspace:*"
+    "@repo/storage": "workspace:*",
+    "iamport-react-native": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -1,4 +1,5 @@
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { Timestamp } from "firebase/firestore";
 import { useRouter } from "expo-router";
 
 export type Product = {
@@ -7,10 +8,12 @@ export type Product = {
   description: string;
   startPrice: number;
   imageUrl: string;
-  createdAt: { seconds: number; nanoseconds: number };
-  endAt: { seconds: number; nanoseconds: number };
+  endAt: Timestamp;
   sellerId: string;
-  status: "active" | "sold" | "expired";
+  createdAt: Timestamp;
+  status: "active" | "completed" | "failed" | "ended" | "error";
+  winnerEmail?: string;
+  finalPrice?: number;
 };
 
 type ProductCardProps = {

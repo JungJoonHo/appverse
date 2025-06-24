@@ -56,9 +56,14 @@ export default function Home() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>실시간 경매</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>로그아웃</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity onPress={() => router.push('/payment-method')}>
+            <Text style={styles.headerLink}>결제 관리</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout}>
+            <Text style={styles.headerLink}>로그아웃</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {products.length === 0 ? (
@@ -103,6 +108,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
+  },
+  headerButtons: {
+    flexDirection: 'row',
+  },
+  headerLink: {
+    color: "#007BFF",
+    marginLeft: 16,
   },
   logoutText: {
     color: "#007BFF",
