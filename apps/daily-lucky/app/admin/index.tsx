@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import {
   collection,
   getDocs,
@@ -9,8 +9,8 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { useAuth } from "../context/AuthContext";
-import { ADMIN_EMAIL } from "../constants/admin";
+import { useAuth } from "../../context/AuthContext";
+import { ADMIN_EMAIL } from "../../constants/admin";
 
 interface Prize {
   id?: string;

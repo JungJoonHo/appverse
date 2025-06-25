@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase";
+import { useAuth } from "../../context/AuthContext";
+import { db } from "../../firebase";
 import { collection, doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 
 function getTodayKey(uid: string) {
