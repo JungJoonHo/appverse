@@ -15,6 +15,7 @@ import {
   ENTITY_ADMIN_USERS,
   AdminUserFields,
 } from "../constants/firebase";
+import kakaoAuthService from "../services/kakaoAuth";
 
 interface AdminUser extends AdminUserFields {
   uid: string;
@@ -30,6 +31,7 @@ interface AuthContextType {
   ) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (name: string, phone: string) => Promise<boolean>;
+  loginWithKakao: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -182,6 +184,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const loginWithKakao = async (): Promise<boolean> => {
+    try {
+      const success = await kakaoAuthService.login();
+      return success;
+    } catch (error) {
+      console.error("Kakao login failed:", error);
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     is_loading,
@@ -189,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     register,
     logout,
     updateProfile: updateUserProfile,
+    loginWithKakao,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
