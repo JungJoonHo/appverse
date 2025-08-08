@@ -16,6 +16,7 @@ import {
   AdminUserFields,
 } from "../constants/firebase";
 import kakaoAuthService from "../services/kakaoAuth";
+import naverAuthService from "../services/naverAuth";
 
 interface AdminUser extends AdminUserFields {
   uid: string;
@@ -32,6 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (name: string, phone: string) => Promise<boolean>;
   loginWithKakao: () => Promise<boolean>;
+  loginWithNaver: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -194,6 +196,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const loginWithNaver = async (): Promise<boolean> => {
+    try {
+      const success = await naverAuthService.login();
+      return success;
+    } catch (error) {
+      console.error("Naver login failed:", error);
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     is_loading,
@@ -202,6 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout,
     updateProfile: updateUserProfile,
     loginWithKakao,
+    loginWithNaver,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

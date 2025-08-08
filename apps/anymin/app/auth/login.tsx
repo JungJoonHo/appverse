@@ -12,13 +12,15 @@ import {
 import { router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import KakaoLoginWebView from "@/components/KakaoLoginWebView";
+import NaverLoginWebView from "@/components/NaverLoginWebView";
 
 export default function LoginScreen() {
   const [email, set_email] = useState("");
   const [password, set_password] = useState("");
   const [is_loading, set_is_loading] = useState(false);
   const [show_kakao_webview, set_show_kakao_webview] = useState(false);
-  const { login, loginWithKakao } = useAuth();
+  const [show_naver_webview, set_show_naver_webview] = useState(false);
+  const { login, loginWithKakao, loginWithNaver } = useAuth();
 
   const handle_login = async () => {
     if (!email || !password) {
@@ -60,6 +62,30 @@ export default function LoginScreen() {
       }
     } catch (error) {
       Alert.alert("오류", "카카오 로그인 중 오류가 발생했습니다.");
+    } finally {
+      set_is_loading(false);
+    }
+  };
+
+  const handle_naver_login = async () => {
+    set_show_naver_webview(true);
+  };
+
+  const handle_naver_auth_success = async (authCode: string) => {
+    set_is_loading(true);
+    try {
+      // 네이버 인증 코드를 서비스에 전달
+      const naverAuthService = await import("@/services/naverAuth");
+      naverAuthService.default.setAuthCode(authCode);
+
+      const success = await loginWithNaver();
+      if (success) {
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("로그인 실패", "네이버 로그인에 실패했습니다.");
+      }
+    } catch (error) {
+      Alert.alert("오류", "네이버 로그인 중 오류가 발생했습니다.");
     } finally {
       set_is_loading(false);
     }
@@ -122,6 +148,16 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={[styles.naver_button, is_loading && styles.button_disabled]}
+            onPress={handle_naver_login}
+            disabled={is_loading}
+          >
+            <Text style={styles.naver_button_text}>
+              {is_loading ? "로그인 중..." : "네이버로 로그인"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.link_button}
             onPress={() => router.push("/auth/register")}
           >
@@ -134,6 +170,12 @@ export default function LoginScreen() {
         visible={show_kakao_webview}
         onClose={() => set_show_kakao_webview(false)}
         onSuccess={handle_kakao_auth_success}
+      />
+
+      <NaverLoginWebView
+        visible={show_naver_webview}
+        onClose={() => set_show_naver_webview(false)}
+        onSuccess={handle_naver_auth_success}
       />
     </KeyboardAvoidingView>
   );
@@ -222,6 +264,20 @@ const styles = StyleSheet.create({
   },
   kakao_button_text: {
     color: "#3C1E1E",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  naver_button: {
+    backgroundColor: "#03C75A",
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#02B551",
+  },
+  naver_button_text: {
+    color: "white",
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
