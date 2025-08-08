@@ -73,6 +73,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="people" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="recordings"
+        options={{
+          title: "녹음본",
+          tabBarIcon: ({ color }) => <TabBarIcon name="mic" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
