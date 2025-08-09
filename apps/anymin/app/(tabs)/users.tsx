@@ -216,23 +216,22 @@ export default function UsersScreen() {
   };
 
   const render_user_item = ({ item }: { item: UserInfo }) => (
-    <View style={styles.user_item}>
+    <TouchableOpacity
+      style={styles.user_item}
+      onPress={() => handle_edit_user(item)}
+      onLongPress={() => handle_delete_user(item)}
+    >
       <View style={styles.user_header}>
         <Text style={styles.user_name}>{item.name}</Text>
-        <View style={styles.action_buttons}>
-          <TouchableOpacity
-            style={styles.edit_button}
-            onPress={() => handle_edit_user(item)}
-          >
-            <Text style={styles.edit_text}>수정</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.delete_button}
-            onPress={() => handle_delete_user(item)}
-          >
-            <Text style={styles.delete_text}>삭제</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.delete_button_icon}
+          onPress={(e) => {
+            e.stopPropagation();
+            handle_delete_user(item);
+          }}
+        >
+          <Text style={styles.delete_icon}>×</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.user_info}>
@@ -246,8 +245,9 @@ export default function UsersScreen() {
             추가자: {item.created_by === user?.uid ? "본인" : "관리자"}
           </Text>
         )}
+        <Text style={styles.user_hint}>탭하여 수정 • 길게 눌러 삭제</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -488,29 +488,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  action_buttons: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  edit_button: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: "#007AFF",
-    borderRadius: 5,
-  },
-  edit_text: {
-    color: "white",
-    fontSize: 12,
-  },
-  delete_button: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  delete_button_icon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: "#FF3B30",
-    borderRadius: 5,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  delete_text: {
+  delete_icon: {
     color: "white",
-    fontSize: 12,
+    fontSize: 16,
+    fontWeight: "bold",
+    lineHeight: 18,
   },
   user_info: {
     gap: 5,
@@ -531,6 +521,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#007AFF",
     fontStyle: "italic",
+  },
+  user_hint: {
+    fontSize: 11,
+    color: "#999",
+    fontStyle: "italic",
+    marginTop: 8,
   },
   empty_state: {
     alignItems: "center",

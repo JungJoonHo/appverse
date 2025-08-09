@@ -166,23 +166,22 @@ export default function ScheduleScreen() {
   };
 
   const render_schedule_item = ({ item }: { item: Schedule }) => (
-    <View style={styles.schedule_item}>
+    <TouchableOpacity
+      style={styles.schedule_item}
+      onPress={() => handle_edit_schedule(item)}
+      onLongPress={() => handle_delete_schedule(item)}
+    >
       <View style={styles.schedule_header}>
         <Text style={styles.schedule_title}>{item.title}</Text>
-        <View style={styles.schedule_actions}>
-          <TouchableOpacity
-            style={styles.action_button}
-            onPress={() => handle_edit_schedule(item)}
-          >
-            <Text style={styles.action_text}>수정</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.action_button, styles.delete_button]}
-            onPress={() => handle_delete_schedule(item)}
-          >
-            <Text style={styles.delete_text}>삭제</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.delete_button_icon}
+          onPress={(e) => {
+            e.stopPropagation();
+            handle_delete_schedule(item);
+          }}
+        >
+          <Text style={styles.delete_icon}>×</Text>
+        </TouchableOpacity>
       </View>
 
       {item.description && (
@@ -195,7 +194,9 @@ export default function ScheduleScreen() {
           item.end_time &&
           ` - ${format_date(item.end_time)}`}
       </Text>
-    </View>
+
+      <Text style={styles.schedule_hint}>탭하여 수정 • 길게 눌러 삭제</Text>
+    </TouchableOpacity>
   );
 
   return (
@@ -484,28 +485,25 @@ const styles = StyleSheet.create({
     color: "#333",
     flex: 1,
   },
-  schedule_actions: {
-    flexDirection: "row",
-  },
-  action_button: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: "#007AFF",
-    borderRadius: 5,
-    marginLeft: 5,
-  },
-  action_text: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  delete_button: {
+  delete_button_icon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: "#FF3B30",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  delete_text: {
+  delete_icon: {
     color: "white",
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "bold",
+    lineHeight: 18,
+  },
+  schedule_hint: {
+    fontSize: 11,
+    color: "#999",
+    fontStyle: "italic",
+    marginTop: 8,
   },
   schedule_description: {
     fontSize: 14,

@@ -129,7 +129,10 @@ export class AudioService {
       }
 
       // 캐시 파일인 경우 FileSystem으로 삭제
-      if (filePath.startsWith(FileSystem.cacheDirectory)) {
+      if (
+        FileSystem.cacheDirectory &&
+        filePath.startsWith(FileSystem.cacheDirectory)
+      ) {
         await FileSystem.deleteAsync(filePath);
         return true;
       }
