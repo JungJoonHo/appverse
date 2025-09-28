@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 import time
 import logging
 from typing import Optional
+import os
+import json
 
 from ..main import get_whisper_service
 from ..services.whisper_service import WhisperService
@@ -18,6 +20,142 @@ from ..models.stt_models import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.post(
+    "/transcribe",
+    summary="파일 경로로 STT 변환",
+    description="파일 경로를 받아서 STT 변환을 수행합니다."
+)
+async def transcribe_by_path(
+    request: dict,
+    whisper_service: WhisperService = Depends(get_whisper_service)
+):
+    """파일 경로로 STT 변환하는 엔드포인트"""
+    
+    start_time = time.time()
+    
+    try:
+        audio_file_path = request.get("audio_file_path")
+        if not audio_file_path:
+            raise HTTPException(
+                status_code=400,
+                detail="audio_file_path가 필요합니다."
+            )
+        
+        # 파일 존재 여부 확인
+        if not os.path.exists(audio_file_path):
+            raise HTTPException(
+                status_code=404,
+                detail=f"파일을 찾을 수 없습니다: {audio_file_path}"
+            )
+        
+        # 파일 크기 확인
+        file_size = os.path.getsize(audio_file_path)
+        max_size = 50 * 1024 * 1024  # 50MB
+        if file_size > max_size:
+            raise HTTPException(
+                status_code=413,
+                detail=f"파일 크기가 너무 큽니다. 최대 {max_size // (1024*1024)}MB까지 지원됩니다."
+            )
+        
+        # 파일 읽기
+        logger.info(f"파일 경로 STT 변환 시작 - 파일: {audio_file_path}, 크기: {file_size}bytes")
+        
+        with open(audio_file_path, 'rb') as f:
+            audio_data = f.read()
+        
+        if not audio_data:
+            raise HTTPException(status_code=400, detail="빈 파일입니다.")
+        
+        # STT 변환 실행
+        result = await whisper_service.transcribe_audio(
+            audio_data=audio_data,
+            language='ko',  # 한국어 기본값
+            task='transcribe'
+        )
+        
+        processing_time = time.time() - start_time
+        
+        # 응답 데이터 구성
+        response_data = {
+            "transcription": result["text"],
+            "language": result["language"],
+            "duration": result.get("duration", 0),
+            "model": result["model"],
+            "processing_time": round(processing_time, 2)
+        }
+        
+        logger.info(
+            f"파일 경로 STT 변환 완료 - 처리시간: {processing_time:.2f}초, "
+            f"텍스트 길이: {len(result['text'])}자"
+        )
+        
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"파일 경로 STT 변환 오류: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"오디오 변환 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@router.post(
+    "/extract",
+    summary="핵심 내용 추출",
+    description="STT 변환된 텍스트에서 핵심 내용을 추출합니다."
+)
+async def extract_key_points(
+    request: dict
+):
+    """핵심 내용을 추출하는 엔드포인트"""
+    
+    try:
+        transcription = request.get("transcription")
+        if not transcription or len(transcription.strip()) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="transcription이 필요합니다."
+            )
+        
+        # 간단한 핵심 내용 추출 로직
+        # 문장을 분리하고 의미있는 내용 추출
+        sentences = transcription.split('.')
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        # 핵심 내용 필터링 (길이, 키워드 등)
+        key_points = []
+        for sentence in sentences:
+            if len(sentence) > 10:  # 10자 이상인 문장만
+                # 중요 키워드가 포함된 문장 우선 선택
+                important_keywords = ['약속', '미팅', '회의', '일정', '시간', '장소', '주소', '전화', '연락', '확인', '요청', '필요', '중요']
+                if any(keyword in sentence for keyword in important_keywords):
+                    key_points.append(sentence)
+                elif len(key_points) < 3:  # 최대 3개까지만 추가
+                    key_points.append(sentence)
+        
+        # 핵심 내용이 부족하면 추가 문장 선택
+        if len(key_points) < 3:
+            remaining_sentences = [s for s in sentences if s not in key_points and len(s) > 15]
+            key_points.extend(remaining_sentences[:3-len(key_points)])
+        
+        logger.info(f"핵심 내용 추출 완료 - 원본 길이: {len(transcription)}자, 추출된 내용: {len(key_points)}개")
+        
+        return {
+            "key_points": key_points,
+            "total_sentences": len(sentences),
+            "extracted_count": len(key_points)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"핵심 내용 추출 오류: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"핵심 내용 추출 중 오류가 발생했습니다: {str(e)}"
+        )
 
 @router.post(
     "/convert",
